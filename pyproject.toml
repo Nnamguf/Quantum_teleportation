@@ -1,0 +1,22 @@
+[project]
+name = "quantum-teleportation"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Oskar Brunn Fugmann", email = "oskar@fugmann.net" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "matplotlib>=3.11.1",
+    "numpy>=2.5.2",
+    "qutip>=5.3.1",
+    "sympy>=1.14.0",
+]
+
+[project.scripts]
+quantum-teleportation = "quantum_teleportation:main"
+
+[build-system]
+requires = ["uv_build>=0.12.1,<0.13.0"]
+build-backend = "uv_build"
