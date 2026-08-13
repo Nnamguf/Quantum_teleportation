@@ -1,6 +1,7 @@
 #import packages
 import qutip as qu
 from qutip_qip.circuit import QubitCircuit, CircuitSimulator, Gate
+from qutip_qip.noise import NoiseModel, GateNoise
 import numpy as np
 #Create function for quantum teleportation
 def quantumteleport(alpha,beta,parties): #parties can only be two
