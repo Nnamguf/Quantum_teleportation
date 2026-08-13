@@ -2,6 +2,16 @@
 import qutip as qu
 from qutip_qip.circuit import QubitCircuit, CircuitSimulator, Gate
 import numpy as np
+# Creates a way of reading what bob ses of alpha, beta
+def ket_reader(state):
+    vector = state.full().flatten()
+    ket0 = np.array([])
+    ket1 = np.array([])
+    kets = [ket0,ket1]
+    for i, amplitude in enumerate(vector):
+        kets[i%2]  = np.append(kets[i%2],amplitude)
+    kets = [np.sum(kets[0]),np.sum(kets[1])]
+    return kets
 #Create function for quantum teleportation
 def quantumteleport(alpha,beta,parties): #parties can only be two
     # creates the state we want to teleport
@@ -28,22 +38,11 @@ def quantumteleport(alpha,beta,parties): #parties can only be two
     result = sim.run(zero_state)
     # get out the final states
     res = result.get_final_states(0)
-    # now we want to get out the correct ket
-    # We trace out qubit 0 and 1 leaving us with bobs qubit
-    # Then we have a density martix to find the ket we find the eigenstates of that matrix
-    vals, vecs =res.ptrace(2).eigenstates()
-    # creates a correction list. This is neaded since qutip somtimes
-    # wants to multiply a eigenvector with -1
-    mul = np.array([-alpha,beta])
-    # correct qutip's errors
-    ket = mul * vecs[1].full().reshape(2,)
-    #replacce -0 with 0
-    ket[ket == -0.0] = 0.0
-    # recreate the ket as a Qobj
-    ket = qu.Qobj(ket)
+    #reads the state that bob sees
+    amplitudes = ket_reader(res)
+    ket = amplitudes[0]*qu.fock(2,0) + amplitudes[1]*qu.fock(2,1)
     return ket
-print(quantumteleport(0,-1,2))
-
+print(quantumteleport(-1,0,2))
 
 
 
