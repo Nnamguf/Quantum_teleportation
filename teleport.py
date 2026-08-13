@@ -30,8 +30,8 @@ def quantumteleport(alpha,beta,parties): #parties can only be two
     q.add_measurement("M0", targets=[0], classical_store=0)
     q.add_measurement("M1", targets=[1], classical_store=1)
     # Do the correction depending on Alices measirements
-    q.add_gate("Z", targets=[2], classical_controls=[0])
     q.add_gate("X", targets=[2], classical_controls=[1])
+    q.add_gate("Z", targets=[2], classical_controls=[0])
     # Define the CircuitSimulator that runs the QuantumCircuit
     sim = CircuitSimulator(q)
     # run the CircuitSimulator on the statevector
@@ -42,7 +42,7 @@ def quantumteleport(alpha,beta,parties): #parties can only be two
     amplitudes = ket_reader(res)
     ket = amplitudes[0]*qu.fock(2,0) + amplitudes[1]*qu.fock(2,1)
     return ket
-print(quantumteleport(-1,0,2))
+
 
 
 
