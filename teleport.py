@@ -46,8 +46,8 @@ def quantumteleport(alpha,beta,parties, noise = "", prob = 0.0, epsilon = 0.0): 
         if np.random.rand() < prob:
             q.add_gate("X", targets=[2])
     # Do the correction depending on Alices measirements
-    q.add_gate("RX", targets=[2], classical_controls=[0], arg_value=np.pi + error)
-    q.add_gate("RZ", targets=[2], classical_controls=[1], arg_value=np.pi + error)
+    q.add_gate("RX", targets=[2], classical_controls=[1], arg_value=np.pi + error)
+    q.add_gate("RZ", targets=[2], classical_controls=[0], arg_value=np.pi + error)
     # Define the CircuitSimulator that runs the QuantumCircuit
     sim = CircuitSimulator(q)
     # creates the statevector that we will send into the quantum teleportation
@@ -60,7 +60,7 @@ def quantumteleport(alpha,beta,parties, noise = "", prob = 0.0, epsilon = 0.0): 
     amplitudes = ket_reader(res)
     ket = amplitudes[0]*qu.fock(2,0) + amplitudes[1]*qu.fock(2,1)
     return ket
-print(quantumteleport(0, 1, 2, noise ="", prob=0.1, epsilon = 0.1))
+print(quantumteleport(1, 0, 2, noise ="", prob=0.1, epsilon = 0.1))
 
 
 
