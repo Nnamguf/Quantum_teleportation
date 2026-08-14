@@ -15,11 +15,11 @@ def ket_reader(state):
     kets = [np.sum(kets[0]),np.sum(kets[1])]
     return kets
 #Create function for quantum teleportation
-def quantumteleport(alpha,beta,parties, noise = "", prob = 0.0, epsilon = 0.0): #parties can only be two
+def quantumteleport(alpha,beta,parties, noise = "", prob = 0.0, epsilon = 0.0, distance =0.0): #parties can only be two
     # creates the state we want to teleport
     # Creates a bellstate 1/sqrt(2) * (|00> +|11>)
     if noise == "loss":
-        if np.random.rand() < prob:
+        if np.random.rand() < 1-np.exp(-prob*distance):
             tpstates = qu.Qobj(np.zeros((2, 1)))
         else:
             tpstates = alpha * qu.fock(2, 0) + beta * qu.fock(2, 1)
@@ -56,14 +56,19 @@ def quantumteleport(alpha,beta,parties, noise = "", prob = 0.0, epsilon = 0.0): 
     # creates the statevector that we will send into the quantum teleportation
     # Define the CircuitSimulator that runs the QuantumCircuit
     # run the CircuitSimulator on the statevector
-    result = sim.run(zero_state)
-    # get out the final states
-    res = result.get_final_states(0)
-    #reads the state that bob sees
-    amplitudes = ket_reader(res)
-    ket = amplitudes[0]*qu.fock(2,0) + amplitudes[1]*qu.fock(2,1)
-    return ket
-print(quantumteleport(0, 1, 2, noise ="gateerror", prob=0.1, epsilon = 0.01))
+    try:
+        result = sim.run(zero_state)
+        # get out the final states
+        res = result.get_final_states(0)
+        #reads the state that bob sees
+        amplitudes = ket_reader(res)
+        ket = amplitudes[0]*qu.fock(2,0) + amplitudes[1]*qu.fock(2,1)
+        return ket
+    except:
+        return "The states was lost during transmission. \nNo teleportation happened. \nTry again"
+tp = quantumteleport(0, 1, 2, noise ="loss", prob=0.2, distance = 1 )
+print(tp)
+
 
 
 
