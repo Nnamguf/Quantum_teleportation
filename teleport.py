@@ -20,7 +20,7 @@ def quantumteleport(alpha,beta,parties, noise = "", prob = 0.0, epsilon = 0.0, d
     for i in range(parties - 1):
         # creates the state we want to teleport
         if noise == "loss":
-            if np.random.rand() < 1-np.exp(-prob*distance):
+            if np.random.rand() < 1-np.exp(-prob*(distance/(parties-1))):
                 tpstates = qu.Qobj(np.zeros((2, 1)))
             else:
                 tpstates = state
