@@ -106,7 +106,9 @@ def entanglementswap():
     print(res)
     print(res.dims)
     amplitudes = ket_reader(res, [2,0])
-    print(amplitudes)
+    state = np.array(amplitudes)
+    state = qu.Qobj(state,dims=[[2, 2], [1]])
+    print(state)
 entanglementswap()
 
 
