@@ -67,12 +67,36 @@ def quantumteleport(alpha,beta,parties, noise = "", prob = 0.0, epsilon = 0.0, d
         return ket
     except:
         return "The states was lost during transmission. \nNo teleportation happened. \nTry again"
-for i in range(10):
-    tp = quantumteleport(0, 1, 2, noise ="gateerror", epsilon = 0.1)
-    print(tp)
+#tp = quantumteleport(0, 1, 2, noise ="", epsilon = 0.1)
+#print(tp)
 
 
-
+def entanglementswap():
+    entangleAB = qu.bell_state('00')
+    entangleAC= qu.bell_state('00')
+    entangleBD = qu.bell_state('00')
+    system = qu.tensor(entangleAB,entangleAC,entangleBD)
+    print(system)
+    e = QubitCircuit(6, num_cbits=4, reverse_states=False)
+    e.add_gate("CNOT", controls=[0], targets=[2])
+    e.add_gate("CNOT", controls=[1], targets=[4])
+    e.add_gate("H", targets=[0])
+    e.add_gate("H", targets=[1])
+    e.add_measurement("M0", targets=[0], classical_store=0)
+    e.add_measurement("M1", targets=[2], classical_store=1)
+    e.add_measurement("M0", targets=[1], classical_store=2)
+    e.add_measurement("M1", targets=[4], classical_store=3)
+    e.add_gate("X", targets=[3], classical_controls=[1])
+    e.add_gate("Z", targets=[3], classical_controls=[0])
+    e.add_gate("X", targets=[5], classical_controls=[3])
+    e.add_gate("Z", targets=[5], classical_controls=[1])
+    #e.draw()
+    simE = CircuitSimulator(e)
+    result = simE.run(system)
+    # get out the final states
+    res = result.get_final_states(0)
+    print(res)
+entanglementswap()
 
 
 
