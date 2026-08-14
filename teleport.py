@@ -5,15 +5,23 @@ from qutip_qip.device import Processor
 from qutip_qip.noise import RelaxationNoise
 import numpy as np
 # Creates a way of reading what bob ses of alpha, beta
-def ket_reader(state):
+def ket_reader(state, positions):
+    n = len(state.dims[0])
+    print(n)
+    bits = [format(i, f"0{n}b") for i in range(2 ** n)]
+
+    bit = []
+
+    for b in bits:
+        value = ''.join(b[-(p + 1)] for p in positions)
+        bit.append(int(value, 2))
+
     vector = state.full().flatten()
-    ket0 = np.array([])
-    ket1 = np.array([])
-    kets = [ket0,ket1]
+    kets = [np.array([]) for _ in range(2*len(positions))]
     for i, amplitude in enumerate(vector):
-        kets[i%2]  = np.append(kets[i%2],amplitude)
-    kets = [np.sum(kets[0]),np.sum(kets[1])]
-    return kets
+        kets[bit[i]]  = np.append(kets[bit[i]],amplitude)
+    sums = [np.sum(array) for array in kets]
+    return sums
 #Create function for quantum teleportation
 def quantumteleport(alpha,beta,parties, noise = "", prob = 0.0, epsilon = 0.0, distance =0.0): #parties can only be two
     # creates the state we want to teleport
@@ -62,13 +70,14 @@ def quantumteleport(alpha,beta,parties, noise = "", prob = 0.0, epsilon = 0.0, d
         # get out the final states
         res = result.get_final_states(0)
         #reads the state that bob sees
-        amplitudes = ket_reader(res)
+        amplitudes = ket_reader(res,[0])
+        print(amplitudes)
         ket = amplitudes[0]*qu.fock(2,0) + amplitudes[1]*qu.fock(2,1)
         return ket
     except:
         return "The states was lost during transmission. \nNo teleportation happened. \nTry again"
-#tp = quantumteleport(0, 1, 2, noise ="", epsilon = 0.1)
-#print(tp)
+tp = quantumteleport(1, 0, 2, noise ="", epsilon = 0.1)
+print(tp)
 
 
 def entanglementswap():
@@ -76,7 +85,6 @@ def entanglementswap():
     entangleAC= qu.bell_state('00')
     entangleBD = qu.bell_state('00')
     system = qu.tensor(entangleAB,entangleAC,entangleBD)
-    print(system)
     e = QubitCircuit(6, num_cbits=4, reverse_states=False)
     e.add_gate("CNOT", controls=[0], targets=[2])
     e.add_gate("CNOT", controls=[1], targets=[4])
@@ -96,6 +104,9 @@ def entanglementswap():
     # get out the final states
     res = result.get_final_states(0)
     print(res)
+    print(res.dims)
+    amplitudes = ket_reader(res, [2,0])
+    print(amplitudes)
 entanglementswap()
 
 
