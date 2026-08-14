@@ -35,7 +35,6 @@ def quantumteleport(alpha,beta,parties, noise = "", prob = 0.0, epsilon = 0.0, d
     # add the cnot gate on qubit 1 with control on the 0'th qubit
     q.add_gate("RX", targets=[0], arg_value=error)
     q.add_gate("CNOT", controls=[0], targets=[1])
-    q.add_gate("RX", targets=[0], arg_value=-error)
     # add the Hadamard gate on qubit 0
     q.add_gate("RX", targets=[0], arg_value=error)
     q.add_gate("H", targets=[0])
@@ -49,8 +48,10 @@ def quantumteleport(alpha,beta,parties, noise = "", prob = 0.0, epsilon = 0.0, d
         if np.random.rand() < prob:
             q.add_gate("X", targets=[2])
     # Do the correction depending on Alices measirements
-    q.add_gate("RX", targets=[2], classical_controls=[1], arg_value=np.pi + error)
-    q.add_gate("RZ", targets=[2], classical_controls=[0], arg_value=np.pi + error)
+    q.add_gate("X", targets=[2], classical_controls=[1])
+    q.add_gate("RX", targets=[2], arg_value=error)
+    q.add_gate("Z", targets=[2], classical_controls=[0])
+    q.add_gate("RZ", targets=[2], arg_value=error)
     # Define the CircuitSimulator that runs the QuantumCircuit
     sim = CircuitSimulator(q)
     # creates the statevector that we will send into the quantum teleportation
@@ -66,8 +67,9 @@ def quantumteleport(alpha,beta,parties, noise = "", prob = 0.0, epsilon = 0.0, d
         return ket
     except:
         return "The states was lost during transmission. \nNo teleportation happened. \nTry again"
-tp = quantumteleport(0, 1, 2, noise ="loss", prob=0.2, distance = 1 )
-print(tp)
+for i in range(10):
+    tp = quantumteleport(0, 1, 2, noise ="gateerror", epsilon = 0.1)
+    print(tp)
 
 
 
