@@ -15,10 +15,10 @@ def ket_reader(state):
     kets = [np.sum(kets[0]),np.sum(kets[1])]
     return kets
 #Create function for quantum teleportation
-def quantumteleport(alpha,beta,parties, noise = "", prob = 0.0, epsilon = 0.0, distance =0.0): #parties can only be two
+def quantumteleport(alpha,beta,parties, noise = [], prob = 0.0, epsilon = 0.0, distance =0.0): #parties can only be two
     # creates the state we want to teleport
     # Creates a bellstate 1/sqrt(2) * (|00> +|11>)
-    if noise == "loss":
+    if "loss" in noise:
         if np.random.rand() < 1-np.exp(-prob*distance):
             tpstates = qu.Qobj(np.zeros((2, 1)))
         else:
@@ -28,7 +28,7 @@ def quantumteleport(alpha,beta,parties, noise = "", prob = 0.0, epsilon = 0.0, d
     bell = qu.bell_state('00')
     zero_state = qu.tensor(tpstates, bell)
     error = 0
-    if noise == "gateerror":
+    if "gateerror" in noise:
         error = epsilon
     #define the quantum circuit for quantum teleportation
     q = QubitCircuit(3, num_cbits=2, reverse_states=False)
@@ -43,7 +43,7 @@ def quantumteleport(alpha,beta,parties, noise = "", prob = 0.0, epsilon = 0.0, d
     q.add_measurement("M0", targets=[0], classical_store=0)
     q.add_measurement("M1", targets=[1], classical_store=1)
     # adds noise if true
-    if noise == "bit-flip":
+    if "bit-flip" in noise:
         # does is as a probabilistic gate
         if np.random.rand() < prob:
             q.add_gate("X", targets=[2])
@@ -68,7 +68,7 @@ def quantumteleport(alpha,beta,parties, noise = "", prob = 0.0, epsilon = 0.0, d
     except:
         return "The states was lost during transmission. \nNo teleportation happened. \nTry again"
 for i in range(10):
-    tp = quantumteleport(0, 1, 2, noise ="gateerror", epsilon = 0.1)
+    tp = quantumteleport(0, 1, 2, noise =["bit-flip","loss"], prob = 0.5, distance = 0.9)
     print(tp)
 
 
