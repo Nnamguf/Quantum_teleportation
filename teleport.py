@@ -15,7 +15,8 @@ def ket_reader(state):
     kets = [np.sum(kets[0]),np.sum(kets[1])]
     return kets
 #Create function for quantum teleportation
-def quantumteleport(alpha,beta,parties, noise = [], prob = 0.0, epsilon = 0.0, distance =0.0): #parties can only be two
+def quantumteleport(alpha,beta,parties, noise = [], prob = 0.0, epsilon = 0.0, distance =0.0,
+                    Fidelity = False): #parties can only be two
     # creates the state we want to teleport
     # Creates a bellstate 1/sqrt(2) * (|00> +|11>)
     if "loss" in noise:
@@ -64,11 +65,15 @@ def quantumteleport(alpha,beta,parties, noise = [], prob = 0.0, epsilon = 0.0, d
         #reads the state that bob sees
         amplitudes = ket_reader(res)
         ket = amplitudes[0]*qu.fock(2,0) + amplitudes[1]*qu.fock(2,1)
-        return ket
+        if Fidelity == True:
+            fidelity = np.abs(qu.fidelity(ket,tpstates))**2
+            return f"The teleported state is: {ket}\n Fhe fidelity is: {fidelity}"
+        else:
+            return f"The teleported state is: {ket}"
     except:
         return "The states was lost during transmission. \nNo teleportation happened. \nTry again"
 for i in range(10):
-    tp = quantumteleport(0, 1, 2, noise =["bit-flip","loss"], prob = 0.5, distance = 0.9)
+    tp = quantumteleport(0, 1, 2, noise =["gateerror"], epsilon = 1, distance = 0.9, Fidelity = True)
     print(tp)
 
 
