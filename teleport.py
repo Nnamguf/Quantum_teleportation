@@ -7,7 +7,6 @@ import numpy as np
 # Creates a way of reading what bob ses of alpha, beta
 def ket_reader(state, positions):
     n = len(state.dims[0])
-    print(n)
     bits = [format(i, f"0{n}b") for i in range(2 ** n)]
 
     bit = []
@@ -76,12 +75,14 @@ def quantumteleport(alpha,beta,parties, noise = "", prob = 0.0, epsilon = 0.0, d
         return ket
     except:
         return "The states was lost during transmission. \nNo teleportation happened. \nTry again"
-tp = quantumteleport(1, 0, 2, noise ="", epsilon = 0.1)
-print(tp)
+#tp = quantumteleport(1, 0, 2, noise ="", epsilon = 0.1)
+#print(tp)
 
 
-def entanglementswap():
-    entangleAB = qu.bell_state('00')
+def entanglementswap(teleport = 'phi+'):
+    mapping = {"phi+": '00', "phi-": '01', "psi+": '10', "psi-" : '11'}
+    teleport = mapping[teleport]
+    entangleAB = qu.bell_state(teleport)
     entangleAC= qu.bell_state('00')
     entangleBD = qu.bell_state('00')
     system = qu.tensor(entangleAB,entangleAC,entangleBD)
@@ -97,19 +98,18 @@ def entanglementswap():
     e.add_gate("X", targets=[3], classical_controls=[1])
     e.add_gate("Z", targets=[3], classical_controls=[0])
     e.add_gate("X", targets=[5], classical_controls=[3])
-    e.add_gate("Z", targets=[5], classical_controls=[1])
+    e.add_gate("Z", targets=[5], classical_controls=[2])
     #e.draw()
     simE = CircuitSimulator(e)
     result = simE.run(system)
     # get out the final states
     res = result.get_final_states(0)
-    print(res)
-    print(res.dims)
     amplitudes = ket_reader(res, [2,0])
     state = np.array(amplitudes)
     state = qu.Qobj(state,dims=[[2, 2], [1]])
     print(state)
-entanglementswap()
+for i in range(10):
+    entanglementswap(teleport = 'psi-')
 
 
 
