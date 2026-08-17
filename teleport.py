@@ -134,3 +134,6 @@ def entanglementswap(teleport = 'phi+'):
     state = np.array(amplitudes)
     state = qu.Qobj(state,dims=[[2, 2], [1]])
     return f"The teleported entangled state is: {ket}"
+
+def quantumteleport_CV():
+    return "I have teleported"
