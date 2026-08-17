@@ -4,6 +4,7 @@ from qutip_qip.circuit import QubitCircuit, CircuitSimulator, Gate
 from qutip_qip.device import Processor
 from qutip_qip.noise import RelaxationNoise
 import numpy as np
+import time
 # Creates a way of reading what bob ses of alpha, beta
 def ket_reader(state, positions):
     #Find the dimension of the hilbertspace
@@ -134,6 +135,26 @@ def entanglementswap(teleport = 'phi+'):
     state = np.array(amplitudes)
     state = qu.Qobj(state,dims=[[2, 2], [1]])
     return f"The teleported entangled state is: {ket}"
+def quantumteleport_CV(x_in,p_in,Ideal = True):
+    #Defines the x and p quadratures for ERP state
+    x_a = 1
+    p_a = 1
+    x_b = x_a
+    p_b = - p_a
+    # Define the stata we want to teleport
+    x_in = x_in
+    p_in = p_in
+    #Define The beamspitter as (p = +, m= -)
+    x_p = (x_a + x_in)/np.sqrt(2)
+    x_m = (x_a - x_in) / np.sqrt(2)
+    p_p = (p_a + p_in) / np.sqrt(2)
+    p_m = (p_a - p_in) / np.sqrt(2)
+    # define the new x_a, p_a
+    x_a =  x_in + np.sqrt(2)*x_m
+    p_a = p_in - np.sqrt(2) * p_p
+    #Displacement on Bobs state
+    x_bout = x_b - np.sqrt(2)*x_m
+    p_bout = p_b + np.sqrt(2) * p_p
+    return int(x_bout), int(p_bout)
+print(quantumteleport_CV(1,1))
 
-def quantumteleport_CV():
-    return "I have teleported"
