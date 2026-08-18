@@ -185,7 +185,7 @@ def quantumteleport_CV(alpha = 1,r=100,Ideal = True, N = 10):
 
 
 
-def quantumteleport_CV_gaussian(alpha,r=20, N = 200):
+def quantumteleport_CV_gaussian(alpha,r=20):
     #create the system
     # define the quadrature values
     x0 = np.sqrt(2) * np.real(alpha)
@@ -225,7 +225,7 @@ def quantumteleport_CV_gaussian(alpha,r=20, N = 200):
     sigma = F_BS @ sigma @ F_BS.T
 
     # Extract the quadratures
-    # define measurement
+    # Define measurement
     measured_indices = [0, 3]
     # define where to apply them
     output_indices = [4, 5]
@@ -233,7 +233,9 @@ def quantumteleport_CV_gaussian(alpha,r=20, N = 200):
     quad_measured = quad[measured_indices]
     # Extract output quadratures
     quad_output = quad[output_indices]
-    # Extract from covariance
+
+    # Extract from covariance:
+
     # We write the covariance as
     #
     #             measured       output
@@ -241,6 +243,7 @@ def quantumteleport_CV_gaussian(alpha,r=20, N = 200):
     # measured      B              C^T
     #
     # output        C              A
+
     B = sigma[np.ix_(
         measured_indices,
         measured_indices
@@ -257,7 +260,7 @@ def quantumteleport_CV_gaussian(alpha,r=20, N = 200):
     )]
 
     #Simulate the measurements
-    np.random.seed(42)
+    #np.random.seed(42)
 
     measurement = np.random.multivariate_normal(
         quad_measured,
@@ -268,18 +271,15 @@ def quantumteleport_CV_gaussian(alpha,r=20, N = 200):
     u = measurement[0]
     v = measurement[1]
 
+    #Setup the output on 2 for the given measurments on 0 and 1 of the system
     B_inv = np.linalg.inv(B)
-
-    sigma_conditional = (
-            A
-            - C @ B_inv @ C.T
-    )
 
     quad_conditional = (
             quad_output
             + C @ B_inv @ (
                     measurement - quad_measured))
 
+    #displace the output state
     displacement = np.array([
         np.sqrt(2) * u,
         -np.sqrt(2) * v
@@ -289,18 +289,9 @@ def quantumteleport_CV_gaussian(alpha,r=20, N = 200):
             quad_conditional
             + displacement
     )
+    #Create the teleported state
+    teleportedstate =  1/np.sqrt(2)*(quad_teleported[0]+1j*quad_teleported[1])
+    return teleportedstate
 
-    sigma_teleported = sigma_conditional
 
-    quad_input = np.array([
-        x0,
-        p0
-    ])
-
-    print("\nInput x =", x0)
-    print("Input p =", p0)
-
-    print("\nOutput x =", quad_teleported[0])
-    print("Output p =", quad_teleported[1])
-
-quantumteleport_CV_gaussian(1+1j)
+print(quantumteleport_CV_gaussian(7+3j))
