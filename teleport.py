@@ -140,49 +140,49 @@ def entanglementswap(teleport = 'phi+'):
 
 
 
-def quantumteleport_CV(r, x_in,p_in,Ideal = True, N = 20):
-    #define annihilation operators for EPR
-    a = qu.tensor(qu.destroy(N), qu.qeye(N))
-    b = qu.tensor(qu.qeye(N), qu.destroy(N))
+def quantumteleport_CV(x_in,p_in,r=100,Ideal = True, N = 10):
+    #define state ti teleport
+    alpha = x_in + p_in*1j
+    psi_input = qu.coherent(N, alpha)
+    #define annihilation operators
+    a = qu.destroy(N)
+    I = qu.qeye(N)
+
+    a0 = qu.tensor(a, I, I)  # input
+    a1 = qu.tensor(I, a, I)  # Alice
+    a2 = qu.tensor(I, I, a)  # Bob
     #Define 2 mode squeezing
-    S2 = (r * (a * b - a.dag() * b.dag())).expm()
+    S2 = (r * (a1 * a2 - a1.dag() * a2.dag())).expm()
     #define EPR state
-    vac = qu.tensor(qu.basis(N, 0), qu.basis(N, 0))
-    epr = S2 * vac
-    print(epr)
+    vac = qu.tensor(psi_input,qu.basis(N, 0), qu.basis(N, 0))
+    state = S2 * vac
+    #print(epr)
     #Define the coherent state we want to teleport
     tpin = qu.coherent(N, (x_in + p_in * 1j)/np.sqrt(2))
-    # define the beamsplitter operator for balanced beamsplitter and phi = 0
-    IN = qu.tensor(qu.destroy(N), qu.qeye(N),qu.qeye(N))
-    A = qu.tensor(qu.qeye(N), qu.destroy(N), qu.qeye(N))
-    B = qu.tensor(qu.qeye(N),qu.qeye(N), qu.destroy(N))
     theta = np.pi / 4
-    U_bs = (theta * (IN.dag()*A - IN*A.dag())).expm()
-    #apply beamsplitter on the state
-    state = qu.tensor(tpin,epr)
-    BsState = U_bs * state
-    #Measure the x_- and p_+
-    # first define the new output operators
-    # Output-mode quadratures
-    x_In = (IN + IN.dag()) / np.sqrt(2)
-    x_A = (A + A.dag()) / np.sqrt(2)
-    p_In = (IN - IN.dag()) / (1j * np.sqrt(2))
-    p_A = (A - A.dag()) / (1j * np.sqrt(2))
-    x_minus = U_bs.dag()*  (x_A-x_In) / np.sqrt(2) * U_bs
-    p_plus = U_bs.dag() * (p_A + p_In) / np.sqrt(2) * U_bs
+    U_bs = (theta * (a0.dag() * a1- a0 * a1.dag())).expm()
 
+    #apply beamsplitter on the state
+    BsState = U_bs * state
+    #Measure the x_- and p_+ via belle measurement
+    x0 = (a0 + a0.dag()) / np.sqrt(2)
+    p0 = (a0 - a0.dag()) / (1j * np.sqrt(2))
+
+    x1 = (a1 + a1.dag()) / np.sqrt(2)
+    p1 = (a1 - a1.dag()) / (1j * np.sqrt(2))
+
+    x_minus = (x0 - x1) / np.sqrt(2)
+    p_plus = (p0 + p1) / np.sqrt(2)
     #apply them on the state
-    mean_xminus = qu.expect(x_minus, BsState)
-    mean_pplus = qu.expect(p_plus, BsState)
     mx, state_after_x = measure_observable(BsState, x_minus)
-    mp, state_after_p = measure_observable(state_after_x, p_plus)
+    mp, state_after_p = measure_observable(BsState, p_plus)
+    #print(mx,mp)
     #Displace the state bob
-    D = qu.tensor(qu.qeye(N),qu.qeye(N),qu.displace(N, mx - mp*1j))
+    D = qu.tensor(qu.qeye(N),qu.qeye(N),qu.displace(N, mx + mp*1j))
     output = D * state_after_p
     # Keep only Bob's mode
     bob_out = output.ptrace(2)
     #test if close
     fidelity = np.abs(qu.fidelity(tpin, bob_out)) ** 2
-    return fidelity
-print(quantumteleport_CV(3,1,1, N = 10))
-
+    return f"Input state:\n alpha = {alpha}\n\nTeleportation fidelity:\n{fidelity}"
+print(quantumteleport_CV(100,1,r=100, N = 10))
