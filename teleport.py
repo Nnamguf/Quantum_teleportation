@@ -182,12 +182,30 @@ def quantumteleport_CV(alpha = 1,r=100,Ideal = True, N = 10):
     fidelity = np.abs(qu.fidelity(psi_input, bob_out)) ** 2
     #return f"Input state:\n alpha = {alpha}\n\nTeleportation fidelity:\n{fidelity}"
     return fidelity
-avg = 0
-for i in range(20):
-    sim = quantumteleport_CV(1,r=100, N = 10)
-    avg +=sim
-    print(sim)
-print(f"The average fidelity is: {avg/20}")
+
 
 
 def quantumteleport_CV_gaussian(x_in,p_in,r=100):
+    #create the system
+    theta = 0
+    I = np.array([[1,0],[0,1]])
+    S_theta = np.array([[np.cos(theta),np.sin(theta)],[-np.sin(theta),np.cos(theta)]])
+    S = np.array([
+    [np.cosh(r), 0, -np.sinh(r)*np.cos(theta), -np.sinh(r)*np.sin(theta)],
+    [0, np.cosh(r), np.sinh(r)*np.sin(theta), -np.sinh(r)*np.cos(theta)],
+    [-np.sinh(r)*np.cos(theta), -np.sinh(r)*np.sin(theta), np.cosh(r), 0],
+    [np.sinh(r)*np.sin(theta), -np.sinh(r)*np.cos(theta), 0, np.cosh(r)]])
+    Sfull = np.block([
+    [I, np.zeros((2, 4))],
+    [np.zeros((4, 2)),S]])
+    system = np.block([
+    [I, np.zeros((2, 4))],
+    [np.zeros((4, 2)),S]]) @ system
+    eta = 1/np.sqrt(2)
+    BS = np.block([[eta*I,eta*I],[eta*I,eta*I]])
+    BS_full = np.block([
+    [BS, np.zeros((4, 2))],
+    [np.zeros((2, 4)),I]])
+
+
+quantumteleport_CV_gaussian(1,1)
