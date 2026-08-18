@@ -140,14 +140,12 @@ def entanglementswap(teleport = 'phi+'):
 
 
 
-def quantumteleport_CV(x_in,p_in,r=100,Ideal = True, N = 10):
-    #define state ti teleport
-    alpha = x_in + p_in*1j
+def quantumteleport_CV(alpha = 1,r=100,Ideal = True, N = 10):
+    #define state to teleport
     psi_input = qu.coherent(N, alpha)
     #define annihilation operators
     a = qu.destroy(N)
     I = qu.qeye(N)
-
     a0 = qu.tensor(a, I, I)  # input
     a1 = qu.tensor(I, a, I)  # Alice
     a2 = qu.tensor(I, I, a)  # Bob
@@ -156,9 +154,7 @@ def quantumteleport_CV(x_in,p_in,r=100,Ideal = True, N = 10):
     #define EPR state
     vac = qu.tensor(psi_input,qu.basis(N, 0), qu.basis(N, 0))
     state = S2 * vac
-    #print(epr)
     #Define the coherent state we want to teleport
-    tpin = qu.coherent(N, (x_in + p_in * 1j)/np.sqrt(2))
     theta = np.pi / 4
     U_bs = (theta * (a0.dag() * a1- a0 * a1.dag())).expm()
 
@@ -174,15 +170,24 @@ def quantumteleport_CV(x_in,p_in,r=100,Ideal = True, N = 10):
     x_minus = (x0 - x1) / np.sqrt(2)
     p_plus = (p0 + p1) / np.sqrt(2)
     #apply them on the state
-    mx, state_after_x = measure_observable(BsState, x_minus)
-    mp, state_after_p = measure_observable(BsState, p_plus)
-    #print(mx,mp)
+    mx, state_after_x = measure_observable(BsState, x0)
+    mp, state_after_p = measure_observable(BsState, p1)
+    print(mx,mp)
     #Displace the state bob
     D = qu.tensor(qu.qeye(N),qu.qeye(N),qu.displace(N, mx + mp*1j))
-    output = D * state_after_p
+    output = D * BsState
     # Keep only Bob's mode
     bob_out = output.ptrace(2)
     #test if close
-    fidelity = np.abs(qu.fidelity(tpin, bob_out)) ** 2
-    return f"Input state:\n alpha = {alpha}\n\nTeleportation fidelity:\n{fidelity}"
-print(quantumteleport_CV(100,1,r=100, N = 10))
+    fidelity = np.abs(qu.fidelity(psi_input, bob_out)) ** 2
+    #return f"Input state:\n alpha = {alpha}\n\nTeleportation fidelity:\n{fidelity}"
+    return fidelity
+avg = 0
+for i in range(20):
+    sim = quantumteleport_CV(1,r=100, N = 10)
+    avg +=sim
+    print(sim)
+print(f"The average fidelity is: {avg/20}")
+
+
+def quantumteleport_CV_gaussian(x_in,p_in,r=100):
