@@ -204,7 +204,7 @@ def quantumteleport_CV(alpha = 1,r=100,Ideal = True, N = 10):
 
 
 
-def quantumteleport_CV_gaussian(alpha,r=20):
+def quantumteleport_CV_gaussian(alpha,r=20, fidelity = False):
     #create the system
     # define the quadrature values
     x0 = np.sqrt(2) * np.real(alpha)
@@ -310,6 +310,11 @@ def quantumteleport_CV_gaussian(alpha,r=20):
     )
     #Create the teleported state
     teleportedstate =  1/np.sqrt(2)*(quad_teleported[0]+1j*quad_teleported[1])
-    return teleportedstate
+    if fidelity == True:
+        fidelity = np.abs(np.exp(-abs(teleportedstate - alpha)**2 / 2))**2
+        return f"The state is: {teleportedstate.item()}\nThe fidelity is: {fidelity.item()}"
+    else:
+        return f"The state is: {teleportedstate.item()}"
+print(quantumteleport_CV_gaussian(1+1j,fidelity =True))
 
 
