@@ -185,27 +185,37 @@ def quantumteleport_CV(alpha = 1,r=100,Ideal = True, N = 10):
 
 
 
-def quantumteleport_CV_gaussian(x_in,p_in,r=100):
+def quantumteleport_CV_gaussian(alpha,r=100, N = 200):
     #create the system
+    # define the quadrature values
+    x0 = np.sqrt(2) * np.real(alpha)
+    p0 = np.sqrt(2) * np.imag(alpha)
+    quad = np.array([
+        x0,
+        p0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+    ])
+    print(mean)
+    # define covariance matrix:
+    sigma = 0.5 * np.eye(6)
     theta = 0
-    I = np.array([[1,0],[0,1]])
-    S_theta = np.array([[np.cos(theta),np.sin(theta)],[-np.sin(theta),np.cos(theta)]])
     S = np.array([
-    [np.cosh(r), 0, -np.sinh(r)*np.cos(theta), -np.sinh(r)*np.sin(theta)],
-    [0, np.cosh(r), np.sinh(r)*np.sin(theta), -np.sinh(r)*np.cos(theta)],
-    [-np.sinh(r)*np.cos(theta), -np.sinh(r)*np.sin(theta), np.cosh(r), 0],
-    [np.sinh(r)*np.sin(theta), -np.sinh(r)*np.cos(theta), 0, np.cosh(r)]])
-    Sfull = np.block([
-    [I, np.zeros((2, 4))],
-    [np.zeros((4, 2)),S]])
-    system = np.block([
-    [I, np.zeros((2, 4))],
-    [np.zeros((4, 2)),S]]) @ system
+        [np.cosh(r), 0, -np.sinh(r) * np.cos(theta), -np.sinh(r) * np.sin(theta)],
+        [0, np.cosh(r), -np.sinh(r) * np.sin(theta), np.sinh(r) * np.cos(theta)],
+        [-np.sinh(r) * np.cos(theta), -np.sinh(r) * np.sin(theta), np.cosh(r), 0],
+        [-np.sinh(r) * np.sin(theta), np.sinh(r) * np.cos(theta), 0, np.cosh(r)]
+    ])
+
     eta = 1/np.sqrt(2)
-    BS = np.block([[eta*I,eta*I],[eta*I,eta*I]])
+    BS = np.block([[eta*I,eta*I],[-eta*I,eta*I]])
     BS_full = np.block([
     [BS, np.zeros((4, 2))],
     [np.zeros((2, 4)),I]])
 
 
-quantumteleport_CV_gaussian(1,1)
+
+
+quantumteleport_CV_gaussian(1+1j)
