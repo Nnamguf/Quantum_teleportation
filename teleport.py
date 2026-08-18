@@ -97,11 +97,16 @@ def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.
         return f"The teleported state is: {ket}\n Fhe fidelity is: {fidelity}"
     else:
         return f"The teleported state is: {ket}"
-print(quantumteleport(0.2,0.8,2))
+
 
 
 #Define how to do quantum teleportation
-def entanglementswap(teleport = 'phi+'):
+def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False):
+    #Generating a seed
+    if seed == True:
+        rng = np.random.default_rng(42)
+    else:
+        rng = np.random.default_rng()
     #Defines the possible bell state that can be teleported and maps them over to what qutip can read.
     mapping = {"phi+": '00', "phi-": '01', "psi+": '10', "psi-" : '11'}
     # pull out the bell state  we want to telepor
@@ -114,20 +119,31 @@ def entanglementswap(teleport = 'phi+'):
     #defines the the full statevector
     system = qu.tensor(entangleAB,entangleAC,entangleBD)
     #defiens the quantum circuit
+    error = 0
+    if "gateerror" in noise:
+        error = rng.uniform(epsilon, epsilon)
     e = QubitCircuit(6, num_cbits=4, reverse_states=False)
     #Creates a circuit that teleports Alice part of the state we want to teleport to charlie
     # and teleports Bobs part to Diane
+    e.add_gate("RX", targets=[0], arg_value=error)
     e.add_gate("CNOT", controls=[0], targets=[2])
+    e.add_gate("RX", targets=[1], arg_value=error)
     e.add_gate("CNOT", controls=[1], targets=[4])
+    e.add_gate("RX", targets=[0], arg_value=error)
     e.add_gate("H", targets=[0])
+    e.add_gate("RX", targets=[1], arg_value=error)
     e.add_gate("H", targets=[1])
     e.add_measurement("M0", targets=[0], classical_store=0)
     e.add_measurement("M1", targets=[2], classical_store=1)
     e.add_measurement("M0", targets=[1], classical_store=2)
     e.add_measurement("M1", targets=[4], classical_store=3)
+    e.add_gate("RX", targets=[3], arg_value=error)
     e.add_gate("X", targets=[3], classical_controls=[1])
+    e.add_gate("RZ", targets=[3], arg_value=error)
     e.add_gate("Z", targets=[3], classical_controls=[0])
+    e.add_gate("RX", targets=[5], arg_value=error)
     e.add_gate("X", targets=[5], classical_controls=[3])
+    e.add_gate("RZ", targets=[5], arg_value=error)
     e.add_gate("Z", targets=[5], classical_controls=[2])
     #Now run the circuit
     simE = CircuitSimulator(e)
@@ -139,8 +155,7 @@ def entanglementswap(teleport = 'phi+'):
     #creates the bell state
     state = np.array(amplitudes)
     state = qu.Qobj(state,dims=[[2, 2], [1]])
-    return f"The teleported entangled state is: {ket}"
-
+    return f"The teleported entangled state is: {state}"
 
 
 
