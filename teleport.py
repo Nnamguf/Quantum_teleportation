@@ -185,7 +185,7 @@ def quantumteleport_CV(alpha = 1,r=100,Ideal = True, N = 10):
 
 
 
-def quantumteleport_CV_gaussian(alpha,r=100, N = 200):
+def quantumteleport_CV_gaussian(alpha,r=20, N = 200):
     #create the system
     # define the quadrature values
     x0 = np.sqrt(2) * np.real(alpha)
@@ -198,9 +198,11 @@ def quantumteleport_CV_gaussian(alpha,r=100, N = 200):
         0.0,
         0.0
     ])
-    print(mean)
     # define covariance matrix:
     sigma = 0.5 * np.eye(6)
+
+    # create 2 mode squeezing
+    F_TMS = np.eye(6)
     theta = 0
     S = np.array([
         [np.cosh(r), 0, -np.sinh(r) * np.cos(theta), -np.sinh(r) * np.sin(theta)],
@@ -208,14 +210,97 @@ def quantumteleport_CV_gaussian(alpha,r=100, N = 200):
         [-np.sinh(r) * np.cos(theta), -np.sinh(r) * np.sin(theta), np.cosh(r), 0],
         [-np.sinh(r) * np.sin(theta), np.sinh(r) * np.cos(theta), 0, np.cosh(r)]
     ])
-
+    F_TMS[2:6, 2:6] = S
+    # create beamsplitter
+    F_BS = np.eye(6)
+    I = np.eye(2)
     eta = 1/np.sqrt(2)
     BS = np.block([[eta*I,eta*I],[-eta*I,eta*I]])
-    BS_full = np.block([
-    [BS, np.zeros((4, 2))],
-    [np.zeros((2, 4)),I]])
+    F_BS[0:4, 0:4] = BS
 
+    # Apply the two operations
+    quad = F_TMS @ quad
+    quad = F_BS @ quad
+    sigma = F_TMS @ sigma @ F_TMS.T
+    sigma = F_BS @ sigma @ F_BS.T
 
+    # Extract the quadratures
+    # define measurement
+    measured_indices = [0, 3]
+    # define where to apply them
+    output_indices = [4, 5]
+    # Extract the measured quadratures
+    quad_measured = quad[measured_indices]
+    # Extract output quadratures
+    quad_output = quad[output_indices]
+    # Extract from covariance
+    # We write the covariance as
+    #
+    #             measured       output
+    #
+    # measured      B              C^T
+    #
+    # output        C              A
+    B = sigma[np.ix_(
+        measured_indices,
+        measured_indices
+    )]
 
+    A = sigma[np.ix_(
+        output_indices,
+        output_indices
+    )]
+
+    C = sigma[np.ix_(
+        output_indices,
+        measured_indices
+    )]
+
+    #Simulate the measurements
+    np.random.seed(42)
+
+    measurement = np.random.multivariate_normal(
+        quad_measured,
+        B
+    )
+
+    # These are our actual experimental results
+    u = measurement[0]
+    v = measurement[1]
+
+    B_inv = np.linalg.inv(B)
+
+    sigma_conditional = (
+            A
+            - C @ B_inv @ C.T
+    )
+
+    quad_conditional = (
+            quad_output
+            + C @ B_inv @ (
+                    measurement - quad_measured))
+
+    displacement = np.array([
+        np.sqrt(2) * u,
+        -np.sqrt(2) * v
+    ])
+
+    quad_teleported = (
+            quad_conditional
+            + displacement
+    )
+
+    sigma_teleported = sigma_conditional
+
+    quad_input = np.array([
+        x0,
+        p0
+    ])
+
+    print("\nInput x =", x0)
+    print("Input p =", p0)
+
+    print("\nOutput x =", quad_teleported[0])
+    print("Output p =", quad_teleported[1])
 
 quantumteleport_CV_gaussian(1+1j)
