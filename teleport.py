@@ -27,7 +27,7 @@ def ket_reader(state, positions):
     sums = [np.sum(array) for array in kets]
     return sums
 #Create function for quantum teleportation
-def quantumteleport(alpha,beta,parties, noise = [], prob = 0.0, epsilon = 0.0, distance =0.0,
+def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.0, distance =0.0,
                     Fidelity = False,seed = False): #parties can only be two
     #teleports to all parties
     if seed == True:
@@ -87,6 +87,7 @@ def quantumteleport(alpha,beta,parties, noise = [], prob = 0.0, epsilon = 0.0, d
         result = sim.run(zero_state)
         # get out the final states
         res = result.get_final_states(0)
+        print(res)
         #reads the state that bob sees
         amplitudes = ket_reader(res,[0])
         #Creates the state
@@ -96,7 +97,7 @@ def quantumteleport(alpha,beta,parties, noise = [], prob = 0.0, epsilon = 0.0, d
         return f"The teleported state is: {ket}\n Fhe fidelity is: {fidelity}"
     else:
         return f"The teleported state is: {ket}"
-print(quantumteleport(0,-1,2))
+print(quantumteleport(0.2,0.8,2))
 
 
 #Define how to do quantum teleportation
@@ -297,4 +298,3 @@ def quantumteleport_CV_gaussian(alpha,r=20):
     return teleportedstate
 
 
-print(quantumteleport_CV_gaussian(7+3j))
