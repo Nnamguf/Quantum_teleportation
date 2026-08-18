@@ -28,15 +28,19 @@ def ket_reader(state, positions):
     return sums
 #Create function for quantum teleportation
 def quantumteleport(alpha,beta,parties, noise = [], prob = 0.0, epsilon = 0.0, distance =0.0,
-                    Fidelity = False): #parties can only be two
+                    Fidelity = False,seed = False): #parties can only be two
     #teleports to all parties
+    if seed == True:
+        rng = np.random.default_rng(42)
+    else:
+        rng = np.random.default_rng()
     for i in range(parties - 1):
         # creates the state we want to teleport
         # Takes into account if there is loss in the system
         if "loss" in noise:
             #at random applies a loss to the state we want to teleport
-            if np.random.rand() < 1-np.exp(-prob*(distance/(parties-1))):
-                tpstates = qu.Qobj(np.zeros((2, 1)))
+            if rng.random.rand() < 1-np.exp(-prob*(distance/(parties-1))):
+                return "The states was lost during transmission. \nNo teleportation happened. \nTry again"
             else:
                 tpstates = alpha * qu.fock(2, 0) + beta * qu.fock(2, 1)
         else:
@@ -48,7 +52,7 @@ def quantumteleport(alpha,beta,parties, noise = [], prob = 0.0, epsilon = 0.0, d
         #Applies the gate error. If there is error stays 0 else it is replace by epsilon
         error = 0
         if "gateerror" in noise:
-            error = epsilon
+            error = rng.uniform(epsilon, epsilon)
         #define the quantum circuit for quantum teleportation
         q = QubitCircuit(3, num_cbits=2, reverse_states=False)
         # add the cnot gate on qubit 1 with control on the 0'th qubit
@@ -65,7 +69,7 @@ def quantumteleport(alpha,beta,parties, noise = [], prob = 0.0, epsilon = 0.0, d
         # adds a bit-flip if that is true
         if "bit-flip" in noise:
             # does is as a probabilistic gate
-            if np.random.rand() < prob:
+            if rng.rand() < prob:
                 q.add_gate("X", targets=[2])
         # Do the correction depending on Alices measirements
         # The RX gate is to apply a tiny error
@@ -80,21 +84,20 @@ def quantumteleport(alpha,beta,parties, noise = [], prob = 0.0, epsilon = 0.0, d
         # Define the CircuitSimulator that runs the QuantumCircuit
         # run the CircuitSimulator on the statevector
         # Try and except is for then there as been a loss of the teleported state.
-        try:
-            result = sim.run(zero_state)
-            # get out the final states
-            res = result.get_final_states(0)
-            #reads the state that bob sees
-            amplitudes = ket_reader(res)
-            #Creates the state
-            ket = amplitudes[0]*qu.fock(2,0) + amplitudes[1]*qu.fock(2,1)
-        except:
-            return "The states was lost during transmission. \nNo teleportation happened. \nTry again"
+        result = sim.run(zero_state)
+        # get out the final states
+        res = result.get_final_states(0)
+        #reads the state that bob sees
+        amplitudes = ket_reader(res,[0])
+        #Creates the state
+        ket = amplitudes[0]*qu.fock(2,0) + amplitudes[1]*qu.fock(2,1)
     if Fidelity == True:
         fidelity = np.abs(qu.fidelity(ket, tpstates)) ** 2
         return f"The teleported state is: {ket}\n Fhe fidelity is: {fidelity}"
     else:
         return f"The teleported state is: {ket}"
+print(quantumteleport(0,-1,2))
+
 
 #Define how to do quantum teleportation
 def entanglementswap(teleport = 'phi+'):
