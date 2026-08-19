@@ -44,8 +44,8 @@ def ket_reader(state, positions):
 # Prob is used for "loss" and "bit-flip", and epsilon is used for "gateerror".
 # If Fidelity is true then quantumteleport also outputs the fidelity between the send state and the teleported one.
 # Seed is true then quantumteleport uses a seed which is 42. If Draw is true the quantum circuit will be drawn.
-def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.0, distance =0.0,
-                    Fidelity = False,seed = False, Draw = False): #parties can only be two
+def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.0,
+                    distance =0.0, Fidelity = False,seed = False, Draw = False):
     #activates the seed if Seed = true
     if seed == True:
         rng = np.random.default_rng(42)
@@ -139,7 +139,14 @@ def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.
 
 print(quantumteleport(0,1))
 
-#Define how to do quantum teleportation
+
+# Here we do entanglement swapping so teleporting a bell state from Alice and Bob to Charlie and Diane.
+# The function entanglementswap takes multiple inputs.
+# teleport is the state we want to teleport it can be "phi+", "phi-", "psi+", "psi-" which are the 4 bell states.
+# It take in noise is only "gateerror" and is applies as noise = ["gateerror"].
+# epsilon controls the streng of "gateerror". If seed it true then it uses the seed 42.
+# If Draw is true then it show the quantum circuit. If Fidelity is true the output also contains the fidelity
+# between bell state the Alice and Bob and the bell state Charlie and Diane shares in the end.
 def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Draw = False, Fidelity = False):
     #Generating a seed
     if seed == True:
