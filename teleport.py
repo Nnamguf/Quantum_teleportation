@@ -234,7 +234,7 @@ def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Dr
 #print(entanglementswap(Fidelity = True))
 
 
-# quantumteleport_CV tries to teleport coherent states from alice to bob.
+# quantumteleport_CV tries to teleport coherent states from alice to bob with continuous variables.
 # Sadly the resolution of reach state in the fock space is to low meaning the fidelity will sometimes
 # be very high (close to 1) and sometimes very low (0.01).
 # The way to make it better is by increasing the squeezing parameter r
@@ -278,7 +278,11 @@ def quantumteleport_CV(alpha = 1,r=100, N = 10):
     return fidelity
 
 
-
+# quantumteleport_CV_gaussian is a better way of doing continuous variable teleportation.
+# It uses a gaussian frame. So the work with a vector r with x and p's (pthe two qaudratures) and a covariance matrix.
+# Any unitary operator does two things now first it is applied to the vector U r
+# and is applied on the covariance matrix sigma like so U sigma U.T
+# This allows us to do continuous variable without using fock space.
 def quantumteleport_CV_gaussian(alpha,r=20, fidelity = False):
     #create the system
     # define the quadrature values
