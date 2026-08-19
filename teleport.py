@@ -148,7 +148,7 @@ print(quantumteleport(0,1))
 # If Draw is true then it show the quantum circuit. If Fidelity is true the output also contains the fidelity
 # between bell state the Alice and Bob and the bell state Charlie and Diane shares in the end.
 def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Draw = False, Fidelity = False):
-    #Generating a seed
+    #Generates a seed if seed is true
     if seed == True:
         rng = np.random.default_rng(42)
     else:
@@ -159,17 +159,21 @@ def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Dr
     teleport = mapping[teleport]
     # Create the bell state we will teleport
     entangleAB = qu.bell_state(teleport)
-    # Create the entanglement needed for teleprotation
+    # Create the entanglement needed for teleportation
     entangleAC= qu.bell_state('00')
     entangleBD = qu.bell_state('00')
     #defines the the full statevector
     system = qu.tensor(entangleAB,entangleAC,entangleBD)
-    #defiens the quantum circuit
+    #create the quantum circuit
+    # If gate error is true then every gate does a tiny error in the form of a RX rotation.
     if "gateerror" in noise:
+        #defines the error form [-epsilon,epsilon[
         error = rng.uniform(epsilon, epsilon)
+        # Creates a circuit that teleports Alice part of the bellstate we want to teleport to charlie
+        # and teleports Bobs part to Diane. The circuit is two circuits that teleports a single qubit.
         e = QubitCircuit(6, num_cbits=4, reverse_states=False)
-        #Creates a circuit that teleports Alice part of the state we want to teleport to charlie
-        # and teleports Bobs part to Diane
+        # the error is created by over or underrotation the state when doing a gate.
+        # this i done by applying an RX gate before each gate
         e.add_gate("RX", targets=[0], arg_value=error)
         e.add_gate("CNOT", controls=[0], targets=[2])
         e.add_gate("RX", targets=[1], arg_value=error)
@@ -178,14 +182,18 @@ def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Dr
         e.add_gate("H", targets=[0])
         e.add_gate("RX", targets=[1], arg_value=error)
         e.add_gate("H", targets=[1])
+        #measuse the qubits that Alice and Bob has access to.
         e.add_measurement("M0", targets=[0], classical_store=0)
         e.add_measurement("M1", targets=[2], classical_store=1)
         e.add_measurement("M0", targets=[1], classical_store=2)
         e.add_measurement("M1", targets=[4], classical_store=3)
+        # applies a correction such that Chalie and Diane shares an entangled state.
+        # There is a tiny over/under correction created by the rotation error+np.pi
         e.add_gate("RX", targets=[3], classical_controls=[1], arg_value=error+np.pi)
         e.add_gate("RZ", targets=[3],classical_controls=[0], arg_value=error+np.pi)
         e.add_gate("RX", targets=[5], classical_controls=[3], arg_value=error+np.pi)
         e.add_gate("RZ", targets=[5],classical_controls=[2], arg_value=error+np.pi)
+    # If there is no gate error the gates a perfect gates no extra error.
     else:
         e = QubitCircuit(6, num_cbits=4, reverse_states=False)
         # Creates a circuit that teleports Alice part of the state we want to teleport to charlie
@@ -194,14 +202,17 @@ def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Dr
         e.add_gate("CNOT", controls=[1], targets=[4])
         e.add_gate("H", targets=[0])
         e.add_gate("H", targets=[1])
+        # measuse the qubits that Alice and Bob has access to.
         e.add_measurement("M0", targets=[0], classical_store=0)
         e.add_measurement("M1", targets=[2], classical_store=1)
         e.add_measurement("M0", targets=[1], classical_store=2)
         e.add_measurement("M1", targets=[4], classical_store=3)
+        # applies a correction such that Chalie and Diane shares an entangled state.
         e.add_gate("X", targets=[3], classical_controls=[1])
         e.add_gate("Z", targets=[3], classical_controls=[0])
         e.add_gate("X", targets=[5], classical_controls=[3])
         e.add_gate("Z", targets=[5], classical_controls=[2])
+    # If draw is activated the quantum circuit will be shown
     if Draw == True:
         e.draw()
     #Now run the circuit
@@ -214,6 +225,8 @@ def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Dr
     #creates the bell state
     state = np.array(amplitudes)
     bellstate = qu.Qobj(state,dims=[[2, 2], [1]])
+    # if fidelity is true then the output is both the entangled state and the fidelity
+    # between then teleported bell state and the bell state that we wanted to teleport.
     if Fidelity == True:
         fidelity = np.abs(qu.fidelity(bellstate, entangleAB)) ** 2
         return f"The teleported entangled state is: {state[0]}|00> +{state[1]}|01> + {state[2]}|10> + {state[3]}|11> \nThe fidelity is: {fidelity}"
