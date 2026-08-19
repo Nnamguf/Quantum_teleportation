@@ -86,15 +86,15 @@ def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.
             # Do alice measurement on qubit 0 and 1 and save the measurement as classical bits
             q.add_measurement("M0", targets=[0], classical_store=0)
             q.add_measurement("M1", targets=[1], classical_store=1)
+            # Do the correction depending on Alice's measurements
+            # here the rotation is a tiny bit  larger or  smaller then expected creating error
+            q.add_gate("RX", targets=[2], classical_controls=[1], arg_value=error+np.pi)
+            q.add_gate("RZ", targets=[2], classical_controls=[0], arg_value=error+np.pi)
             # adds a bit-flip if that is true
             if "bit-flip" in noise:
                 # Applies the gate in some procent of the time determined by prob.
                 if rng.random.rand() < prob:
                     q.add_gate("X", targets=[2])
-            # Do the correction depending on Alice's measurements
-            # here the rotation is a tiny bit  larger or  smaller then expected creating error
-            q.add_gate("RX", targets=[2], classical_controls=[1], arg_value=error+np.pi)
-            q.add_gate("RZ", targets=[2], classical_controls=[0], arg_value=error+np.pi)
         # If there is no gate error we end up here
         else:
             # define the quantum circuit for quantum teleportation
@@ -136,8 +136,6 @@ def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.
         return f"The teleported state is: {amplitudes[0]}|0> + {amplitudes[1]}|1>\n Fhe fidelity is: {fidelity}"
     else:
         return f"The teleported state is: {amplitudes[0]}|0> + {amplitudes[1]}|1>"
-
-#print(quantumteleport(0,1))
 
 
 # Here we do entanglement swapping so teleporting a bell state from Alice and Bob to Charlie and Diane.
@@ -231,7 +229,7 @@ def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Dr
         fidelity = np.abs(qu.fidelity(bellstate, entangleAB)) ** 2
         return f"The teleported entangled state is: {state[0]}|00> +{state[1]}|01> + {state[2]}|10> + {state[3]}|11> \nThe fidelity is: {fidelity}"
     return f"The teleported entangled state is: {state[0]}|00> +{state[1]}|01> + {state[2]}|10> + {state[3]}|11> "
-#print(entanglementswap(Fidelity = True))
+
 
 
 # quantumteleport_CV tries to teleport coherent states from alice to bob with continuous variables.
@@ -374,6 +372,8 @@ def quantumteleport_CV_gaussian(alpha,r=20, fidelity = False):
         return f"The state is: |{np.real(teleportedstate.item())} + {np.imag(teleportedstate.item())}j>\nThe fidelity is: {fidelity.item()}"
     else:
         return f"The state is: |{teleportedstate.item()}>"
-print(quantumteleport_CV_gaussian(1,fidelity =True))
+
+# Here are some test function to use
+
 
 
