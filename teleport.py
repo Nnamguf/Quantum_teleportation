@@ -190,7 +190,7 @@ def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Dr
     bellstate = qu.Qobj(state,dims=[[2, 2], [1]])
     if Fidelity == True:
         fidelity = np.abs(qu.fidelity(bellstate, entangleAB)) ** 2
-        return f"The teleported entangled state is: {state[0]}|00> +{state[1]}|01> + {state[2]}|10> + {state[3]}|11> \n Fhe fidelity is: {fidelity}"
+        return f"The teleported entangled state is: {state[0]}|00> +{state[1]}|01> + {state[2]}|10> + {state[3]}|11> \nThe fidelity is: {fidelity}"
     return f"The teleported entangled state is: {state[0]}|00> +{state[1]}|01> + {state[2]}|10> + {state[3]}|11> "
 print(entanglementswap(Fidelity = True))
 
@@ -347,9 +347,9 @@ def quantumteleport_CV_gaussian(alpha,r=20, fidelity = False):
     teleportedstate =  1/np.sqrt(2)*(quad_teleported[0]+1j*quad_teleported[1])
     if fidelity == True:
         fidelity = np.abs(np.exp(-abs(teleportedstate - alpha)**2 / 2))**2
-        return f"The state is: {teleportedstate.item()}\nThe fidelity is: {fidelity.item()}"
+        return f"The state is: |{np.real(teleportedstate.item())} + {np.imag(teleportedstate.item())}j>\nThe fidelity is: {fidelity.item()}"
     else:
-        return f"The state is: {teleportedstate.item()}"
-#print(quantumteleport_CV_gaussian(1+1j,fidelity =True))
+        return f"The state is: |{teleportedstate.item()}>"
+print(quantumteleport_CV_gaussian(1,fidelity =True))
 
 
