@@ -72,7 +72,7 @@ def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.
                     q.add_gate("X", targets=[2])
             # Do the correction depending on Alices measirements
             # The RX gate is to apply a tiny error
-            q.add_gate("RX", targets=[2], classical_controls=[0], arg_value=error+np.pi)
+            q.add_gate("RX", targets=[2], classical_controls=[1], arg_value=error+np.pi)
             # The Rz gate is to apply a tiny error
             q.add_gate("RZ", targets=[2], classical_controls=[0], arg_value=error+np.pi)
         else:
@@ -107,7 +107,6 @@ def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.
         result = sim.run(zero_state)
         # get out the final states
         res = result.get_final_states(0)
-        print(res)
         #reads the state that bob sees
         amplitudes = ket_reader(res,[0])
         #Creates the state
@@ -118,7 +117,7 @@ def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.
     else:
         return f"The teleported state is: {ket}"
 
-print(quantumteleport(1,0,Draw = True, noise= ))
+print(quantumteleport(1,0,Draw = True, noise=["gateerror"],epsilon = 0 ))
 
 #Define how to do quantum teleportation
 def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Draw = False):
@@ -139,32 +138,43 @@ def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Dr
     #defines the the full statevector
     system = qu.tensor(entangleAB,entangleAC,entangleBD)
     #defiens the quantum circuit
-    error = 0
     if "gateerror" in noise:
         error = rng.uniform(epsilon, epsilon)
-    e = QubitCircuit(6, num_cbits=4, reverse_states=False)
-    #Creates a circuit that teleports Alice part of the state we want to teleport to charlie
-    # and teleports Bobs part to Diane
-    e.add_gate("RX", targets=[0], arg_value=error)
-    e.add_gate("CNOT", controls=[0], targets=[2])
-    e.add_gate("RX", targets=[1], arg_value=error)
-    e.add_gate("CNOT", controls=[1], targets=[4])
-    e.add_gate("RX", targets=[0], arg_value=error)
-    e.add_gate("H", targets=[0])
-    e.add_gate("RX", targets=[1], arg_value=error)
-    e.add_gate("H", targets=[1])
-    e.add_measurement("M0", targets=[0], classical_store=0)
-    e.add_measurement("M1", targets=[2], classical_store=1)
-    e.add_measurement("M0", targets=[1], classical_store=2)
-    e.add_measurement("M1", targets=[4], classical_store=3)
-    e.add_gate("RX", targets=[3], arg_value=error)
-    e.add_gate("X", targets=[3], classical_controls=[1])
-    e.add_gate("RZ", targets=[3], arg_value=error)
-    e.add_gate("Z", targets=[3], classical_controls=[0])
-    e.add_gate("RX", targets=[5], arg_value=error)
-    e.add_gate("X", targets=[5], classical_controls=[3])
-    e.add_gate("RZ", targets=[5], arg_value=error)
-    e.add_gate("Z", targets=[5], classical_controls=[2])
+        e = QubitCircuit(6, num_cbits=4, reverse_states=False)
+        #Creates a circuit that teleports Alice part of the state we want to teleport to charlie
+        # and teleports Bobs part to Diane
+        e.add_gate("RX", targets=[0], arg_value=error)
+        e.add_gate("CNOT", controls=[0], targets=[2])
+        e.add_gate("RX", targets=[1], arg_value=error)
+        e.add_gate("CNOT", controls=[1], targets=[4])
+        e.add_gate("RX", targets=[0], arg_value=error)
+        e.add_gate("H", targets=[0])
+        e.add_gate("RX", targets=[1], arg_value=error)
+        e.add_gate("H", targets=[1])
+        e.add_measurement("M0", targets=[0], classical_store=0)
+        e.add_measurement("M1", targets=[2], classical_store=1)
+        e.add_measurement("M0", targets=[1], classical_store=2)
+        e.add_measurement("M1", targets=[4], classical_store=3)
+        e.add_gate("RX", targets=[3], classical_controls=[1], arg_value=error+np.pi)
+        e.add_gate("RZ", targets=[3],classical_controls=[0], arg_value=error+np.pi)
+        e.add_gate("RX", targets=[5], classical_controls=[3], arg_value=error+np.pi)
+        e.add_gate("RZ", targets=[5],classical_controls=[2], arg_value=error+np.pi)
+    else:
+        e = QubitCircuit(6, num_cbits=4, reverse_states=False)
+        # Creates a circuit that teleports Alice part of the state we want to teleport to charlie
+        # and teleports Bobs part to Diane
+        e.add_gate("CNOT", controls=[0], targets=[2])
+        e.add_gate("CNOT", controls=[1], targets=[4])
+        e.add_gate("H", targets=[0])
+        e.add_gate("H", targets=[1])
+        e.add_measurement("M0", targets=[0], classical_store=0)
+        e.add_measurement("M1", targets=[2], classical_store=1)
+        e.add_measurement("M0", targets=[1], classical_store=2)
+        e.add_measurement("M1", targets=[4], classical_store=3)
+        e.add_gate("X", targets=[3], classical_controls=[1])
+        e.add_gate("Z", targets=[3], classical_controls=[0])
+        e.add_gate("X", targets=[5], classical_controls=[3])
+        e.add_gate("Z", targets=[5], classical_controls=[2])
     if Draw == True:
         e.draw()
     #Now run the circuit
@@ -213,7 +223,6 @@ def quantumteleport_CV(alpha = 1,r=100,Ideal = True, N = 10):
     #apply them on the state
     mx, state_after_x = measure_observable(BsState, x0)
     mp, state_after_p = measure_observable(BsState, p1)
-    print(mx,mp)
     #Displace the state bob
     D = qu.tensor(qu.qeye(N),qu.qeye(N),qu.displace(N, mx + mp*1j))
     output = D * BsState
@@ -337,6 +346,6 @@ def quantumteleport_CV_gaussian(alpha,r=20, fidelity = False):
         return f"The state is: {teleportedstate.item()}\nThe fidelity is: {fidelity.item()}"
     else:
         return f"The state is: {teleportedstate.item()}"
-print(quantumteleport_CV_gaussian(1+1j,fidelity =True))
+#print(quantumteleport_CV_gaussian(1+1j,fidelity =True))
 
 
