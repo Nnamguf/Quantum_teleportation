@@ -5,6 +5,7 @@ from qutip_qip.device import Processor
 from qutip_qip.noise import RelaxationNoise
 from qutip.measurement import measure_observable
 import numpy as np
+
 # Creates a way of reading what bob ses of alpha, beta
 def ket_reader(state, positions):
     #Find the dimension of the hilbertspace
@@ -113,11 +114,11 @@ def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.
         ket = amplitudes[0]*qu.fock(2,0) + amplitudes[1]*qu.fock(2,1)
     if Fidelity == True:
         fidelity = np.abs(qu.fidelity(ket, tpstates)) ** 2
-        return f"The teleported state is: {ket}\n Fhe fidelity is: {fidelity}"
+        return f"The teleported state is: {amplitudes[0]}|0> + {amplitudes[1]}|1>\n Fhe fidelity is: {fidelity}"
     else:
-        return f"The teleported state is: {ket}"
+        return f"The teleported state is: {amplitudes[0]}|0> + {amplitudes[1]}|1>"
 
-print(quantumteleport(1,0,Draw = True, noise=["gateerror"],epsilon = 0 ))
+print(quantumteleport(0,1))
 
 #Define how to do quantum teleportation
 def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Draw = False):
