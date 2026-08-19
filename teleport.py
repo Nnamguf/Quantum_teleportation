@@ -28,7 +28,7 @@ def ket_reader(state, positions):
     return sums
 #Create function for quantum teleportation
 def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.0, distance =0.0,
-                    Fidelity = False,seed = False): #parties can only be two
+                    Fidelity = False,seed = False, Draw = False): #parties can only be two
     #teleports to all parties
     if seed == True:
         rng = np.random.default_rng(42)
@@ -78,6 +78,8 @@ def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.
         # The Rz gate is to apply a tiny error
         q.add_gate("Z", targets=[2], classical_controls=[0])
         q.add_gate("RZ", targets=[2], arg_value=error)
+        if Draw == True:
+            q.draw()
         # Define the CircuitSimulator that runs the QuantumCircuit
         sim = CircuitSimulator(q)
         # creates the statevector that we will send into the quantum teleportation
@@ -98,10 +100,10 @@ def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.
     else:
         return f"The teleported state is: {ket}"
 
-
+print(quantumteleport(1,0,Draw = True))
 
 #Define how to do quantum teleportation
-def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False):
+def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Draw = False):
     #Generating a seed
     if seed == True:
         rng = np.random.default_rng(42)
@@ -145,6 +147,8 @@ def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False):
     e.add_gate("X", targets=[5], classical_controls=[3])
     e.add_gate("RZ", targets=[5], arg_value=error)
     e.add_gate("Z", targets=[5], classical_controls=[2])
+    if Draw == True:
+        e.draw()
     #Now run the circuit
     simE = CircuitSimulator(e)
     result = simE.run(system)
