@@ -121,7 +121,7 @@ def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.
 print(quantumteleport(0,1))
 
 #Define how to do quantum teleportation
-def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Draw = False):
+def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Draw = False, Fidelity = False):
     #Generating a seed
     if seed == True:
         rng = np.random.default_rng(42)
@@ -187,9 +187,12 @@ def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Dr
     amplitudes = ket_reader(res, [2,0])
     #creates the bell state
     state = np.array(amplitudes)
-    state = qu.Qobj(state,dims=[[2, 2], [1]])
-    return f"The teleported entangled state is: {state}"
-
+    bellstate = qu.Qobj(state,dims=[[2, 2], [1]])
+    if Fidelity == True:
+        fidelity = np.abs(qu.fidelity(bellstate, entangleAB)) ** 2
+        return f"The teleported entangled state is: {state[0]}|00> +{state[1]}|01> + {state[2]}|10> + {state[3]}|11> \n Fhe fidelity is: {fidelity}"
+    return f"The teleported entangled state is: {state[0]}|00> +{state[1]}|01> + {state[2]}|10> + {state[3]}|11> "
+print(entanglementswap(Fidelity = True))
 
 
 def quantumteleport_CV(alpha = 1,r=100,Ideal = True, N = 10):
