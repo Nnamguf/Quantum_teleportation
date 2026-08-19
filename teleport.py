@@ -6,26 +6,35 @@ from qutip_qip.noise import RelaxationNoise
 from qutip.measurement import measure_observable
 import numpy as np
 
-# Creates a way of reading what bob ses of alpha, beta
+# Creates a way of reading the state that is outputed from a qauntum circuit.
+# Since qutip does not destroy the state when measured then there is need for somthing that can remove all the state
+# that should have been gone. This is what ket_reader does.
+# ket_reader takes two inputs the state you want to read and which qubits are relevant.
+# And outputs a list of amplitudes for those qubits.
 def ket_reader(state, positions):
-    #Find the dimension of the hilbertspace
+    #Find the dimension of the hilbertspace ie. the amount of qubits in the hilbert space.
     n = len(state.dims[0])
     #Creates a list of all possible states in this hilbertspace
     bits = [format(i, f"0{n}b") for i in range(2 ** n)]
-    #Creates a list which will contain the where each element in the state belongs to in the statevector we want to output
+    #Creates a list which will contain the where each element in the state belongs
+    # to in the output. So for a qubit bit will be two long so |0> and |1>.
+    # And for a bell state bit will be 4 long so |00>, |01>, |10> and |11>
     bit = []
     for b in bits:
         value = ''.join(b[-(p + 1)] for p in positions)
         bit.append(int(value, 2))
     #take the state that have been teleported
     vector = state.full().flatten()
-    #Take the amplitude of each element in the statevector and appends it to the right place to create the amplitude of
-    #the output state
+    #Take the amplitude of each element in the statevector and appends it to the right place
+    # to create the amplitude of the output state and then returns that list.
     kets = [np.array([]) for _ in range(2*len(positions))]
     for i, amplitude in enumerate(vector):
         kets[bit[i]]  = np.append(kets[bit[i]],amplitude)
     sums = [np.sum(array) for array in kets]
     return sums
+
+
+
 #Create function for quantum teleportation
 def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.0, distance =0.0,
                     Fidelity = False,seed = False, Draw = False): #parties can only be two
