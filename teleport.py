@@ -347,51 +347,25 @@ def quantumteleport_CV_gaussian(alpha,r=20, fidelity = False):
     #
     # output        C              A
 
-    B = sigma[np.ix_(
-        measured_indices,
-        measured_indices
-    )]
-
-    A = sigma[np.ix_(
-        output_indices,
-        output_indices
-    )]
-
-    C = sigma[np.ix_(
-        output_indices,
-        measured_indices
-    )]
-
+    B = sigma[np.ix_(measured_indices,measured_indices)]
+    A = sigma[np.ix_(output_indices, output_indices)]
+    C = sigma[np.ix_(output_indices,measured_indices)]
     #Simulate the measurements
     # since there is some uncertency to the measurement of a quadrature we model that now
-    measurement = np.random.multivariate_normal(
-        quad_measured,
-        B
-    )
-
+    measurement = np.random.multivariate_normal(quad_measured,B)
     # These are our actual experimental results what our model give for the homodyne detection
     u = measurement[0]
     v = measurement[1]
-
     #Setup the output on 2 for the given measurments on 0 and 1 of the system
     B_inv = np.linalg.inv(B)
 
-    quad_conditional = (
-            quad_output
-            + C @ B_inv @ (
-                    measurement - quad_measured))
+    quad_conditional = (quad_output+ C @ B_inv @ (measurement - quad_measured))
 
     #displace the output state
     # created the displacement vector
-    displacement = np.array([
-        np.sqrt(2) * u,
-        -np.sqrt(2) * v
-    ])
+    displacement = np.array([np.sqrt(2) * u,-np.sqrt(2) * v])
     # apply the displacemet
-    quad_teleported = (
-            quad_conditional
-            + displacement
-    )
+    quad_teleported = (quad_conditional+ displacement)
     #Create the teleported state
     teleportedstate =  1/np.sqrt(2)*(quad_teleported[0]+1j*quad_teleported[1])
     # if fidellity is true output the state and the fidelity.
