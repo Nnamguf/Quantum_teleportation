@@ -283,9 +283,13 @@ def quantumteleport_CV(alpha = 1,r=100, N = 10):
 # Any unitary operator does two things now first it is applied to the vector U r
 # and is applied on the covariance matrix sigma like so U sigma U.T
 # This allows us to do continuous variable without using fock space.
+# quantumteleport_CV_gaussian takes 3 inputs:
+# alpha is the coherent state we want to teleport
+# r is the squeezing parameter
+# fidelity is a parameter that tells if the output should contain the fidelity.
 def quantumteleport_CV_gaussian(alpha,r=20, fidelity = False):
-    #create the system
-    # define the quadrature values
+    # create the system
+    # define the quadrature values as a vector
     x0 = np.sqrt(2) * np.real(alpha)
     p0 = np.sqrt(2) * np.imag(alpha)
     quad = np.array([
@@ -316,24 +320,23 @@ def quantumteleport_CV_gaussian(alpha,r=20, fidelity = False):
     BS = np.block([[eta*I,eta*I],[-eta*I,eta*I]])
     F_BS[0:4, 0:4] = BS
 
-    # Apply the two operations
+    # Apply the two operations on the vector of quadratures and the covariance matrix
     quad = F_TMS @ quad
     quad = F_BS @ quad
     sigma = F_TMS @ sigma @ F_TMS.T
     sigma = F_BS @ sigma @ F_BS.T
 
-    # Extract the quadratures
+    # Extract the quadratures from quad via a homodyne detection
     # Define measurement
     measured_indices = [0, 3]
-    # define where to apply them
+    # define where to apply the dispalcement.
     output_indices = [4, 5]
-    # Extract the measured quadratures
+    # Extract the measured quadratures in the vector quad
     quad_measured = quad[measured_indices]
-    # Extract output quadratures
+    # Extract output quadratures  in the vector quad
     quad_output = quad[output_indices]
 
     # Extract from covariance:
-
     # We write the covariance as
     #
     #             measured       output
@@ -358,14 +361,13 @@ def quantumteleport_CV_gaussian(alpha,r=20, fidelity = False):
     )]
 
     #Simulate the measurements
-    #np.random.seed(42)
-
+    # since there is some uncertency to the measurement of a quadrature we model that now
     measurement = np.random.multivariate_normal(
         quad_measured,
         B
     )
 
-    # These are our actual experimental results
+    # These are our actual experimental results what our model give for the homodyne detection
     u = measurement[0]
     v = measurement[1]
 
@@ -378,17 +380,19 @@ def quantumteleport_CV_gaussian(alpha,r=20, fidelity = False):
                     measurement - quad_measured))
 
     #displace the output state
+    # created the displacement vector
     displacement = np.array([
         np.sqrt(2) * u,
         -np.sqrt(2) * v
     ])
-
+    # apply the displacemet
     quad_teleported = (
             quad_conditional
             + displacement
     )
     #Create the teleported state
     teleportedstate =  1/np.sqrt(2)*(quad_teleported[0]+1j*quad_teleported[1])
+    # if fidellity is true output the state and the fidelity.
     if fidelity == True:
         fidelity = np.abs(np.exp(-abs(teleportedstate - alpha)**2 / 2))**2
         return f"The state is: |{np.real(teleportedstate.item())} + {np.imag(teleportedstate.item())}j>\nThe fidelity is: {fidelity.item()}"
