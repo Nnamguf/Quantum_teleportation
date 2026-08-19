@@ -137,7 +137,7 @@ def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.
     else:
         return f"The teleported state is: {amplitudes[0]}|0> + {amplitudes[1]}|1>"
 
-print(quantumteleport(0,1))
+#print(quantumteleport(0,1))
 
 
 # Here we do entanglement swapping so teleporting a bell state from Alice and Bob to Charlie and Diane.
@@ -231,10 +231,18 @@ def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Dr
         fidelity = np.abs(qu.fidelity(bellstate, entangleAB)) ** 2
         return f"The teleported entangled state is: {state[0]}|00> +{state[1]}|01> + {state[2]}|10> + {state[3]}|11> \nThe fidelity is: {fidelity}"
     return f"The teleported entangled state is: {state[0]}|00> +{state[1]}|01> + {state[2]}|10> + {state[3]}|11> "
-print(entanglementswap(Fidelity = True))
+#print(entanglementswap(Fidelity = True))
 
 
-def quantumteleport_CV(alpha = 1,r=100,Ideal = True, N = 10):
+# quantumteleport_CV tries to teleport coherent states from alice to bob.
+# Sadly the resolution of reach state in the fock space is to low meaning the fidelity will sometimes
+# be very high (close to 1) and sometimes very low (0.01).
+# The way to make it better is by increasing the squeezing parameter r
+# and by making the fock space bigger by setting N to be higher. This is not possible since for high N
+# we will run out of memory very fast.
+# quantumteleport_CV take 3 inputs and outputs the fidelity between the original state and the one bob has in the end.
+# alpha is the coherent state we want to teleport, r is the squeezing parameter and N is the size of the fock space.
+def quantumteleport_CV(alpha = 1,r=100, N = 10):
     #define state to teleport
     psi_input = qu.coherent(N, alpha)
     #define annihilation operators
@@ -245,35 +253,28 @@ def quantumteleport_CV(alpha = 1,r=100,Ideal = True, N = 10):
     a2 = qu.tensor(I, I, a)  # Bob
     #Define 2 mode squeezing
     S2 = (r * (a1 * a2 - a1.dag() * a2.dag())).expm()
-    #define EPR state
+    #define full system state of the state we want to teleport and an EPR state.
     vac = qu.tensor(psi_input,qu.basis(N, 0), qu.basis(N, 0))
     state = S2 * vac
-    #Define the coherent state we want to teleport
+    #Define the beamsplitter acting on input and ALice
     theta = np.pi / 4
     U_bs = (theta * (a0.dag() * a1- a0 * a1.dag())).expm()
-
     #apply beamsplitter on the state
     BsState = U_bs * state
-    #Measure the x_- and p_+ via belle measurement
+    # Now we do a homodyne detection on the output of the beamsplitter
+    # Create the x and p operator after the beamsplitter
     x0 = (a0 + a0.dag()) / np.sqrt(2)
-    p0 = (a0 - a0.dag()) / (1j * np.sqrt(2))
-
-    x1 = (a1 + a1.dag()) / np.sqrt(2)
     p1 = (a1 - a1.dag()) / (1j * np.sqrt(2))
-
-    x_minus = (x0 - x1) / np.sqrt(2)
-    p_plus = (p0 + p1) / np.sqrt(2)
     #apply them on the state
     mx, state_after_x = measure_observable(BsState, x0)
     mp, state_after_p = measure_observable(BsState, p1)
-    #Displace the state bob
+    #Displace the state bob with the amount the ALice measured on the beamsplitter.
     D = qu.tensor(qu.qeye(N),qu.qeye(N),qu.displace(N, mx + mp*1j))
     output = D * BsState
     # Keep only Bob's mode
     bob_out = output.ptrace(2)
-    #test if close
+    #test if the teleportation is good.
     fidelity = np.abs(qu.fidelity(psi_input, bob_out)) ** 2
-    #return f"Input state:\n alpha = {alpha}\n\nTeleportation fidelity:\n{fidelity}"
     return fidelity
 
 
