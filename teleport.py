@@ -5,7 +5,6 @@ from qutip_qip.device import Processor
 from qutip_qip.noise import RelaxationNoise
 from qutip.measurement import measure_observable
 import numpy as np
-import time
 # Creates a way of reading what bob ses of alpha, beta
 def ket_reader(state, positions):
     #Find the dimension of the hilbertspace
@@ -50,34 +49,53 @@ def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.
         #Combine the state we teleport with the bell state
         zero_state = qu.tensor(tpstates, bell)
         #Applies the gate error. If there is error stays 0 else it is replace by epsilon
-        error = 0
+
         if "gateerror" in noise:
             error = rng.uniform(epsilon, epsilon)
-        #define the quantum circuit for quantum teleportation
-        q = QubitCircuit(3, num_cbits=2, reverse_states=False)
-        # add the cnot gate on qubit 1 with control on the 0'th qubit
-        # The RX gate is to apply a tiny error
-        q.add_gate("RX", targets=[0], arg_value=error)
-        q.add_gate("CNOT", controls=[0], targets=[1])
-        # add the Hadamard gate on qubit 0
-        # The RX gate is to apply a tiny error
-        q.add_gate("RX", targets=[0], arg_value=error)
-        q.add_gate("H", targets=[0])
-        # Do alice measurement on qubit 0 and 1 and save the measurement as classical bits
-        q.add_measurement("M0", targets=[0], classical_store=0)
-        q.add_measurement("M1", targets=[1], classical_store=1)
-        # adds a bit-flip if that is true
-        if "bit-flip" in noise:
-            # does is as a probabilistic gate
-            if rng.rand() < prob:
-                q.add_gate("X", targets=[2])
-        # Do the correction depending on Alices measirements
-        # The RX gate is to apply a tiny error
-        q.add_gate("X", targets=[2], classical_controls=[1])
-        q.add_gate("RX", targets=[2], arg_value=error)
-        # The Rz gate is to apply a tiny error
-        q.add_gate("Z", targets=[2], classical_controls=[0])
-        q.add_gate("RZ", targets=[2], arg_value=error)
+            #define the quantum circuit for quantum teleportation
+            q = QubitCircuit(3, num_cbits=2, reverse_states=False)
+            # add the cnot gate on qubit 1 with control on the 0'th qubit
+            # The RX gate is to apply a tiny error
+            q.add_gate("RX", targets=[0], arg_value=error)
+            q.add_gate("CNOT", controls=[0], targets=[1])
+            # add the Hadamard gate on qubit 0
+            # The RX gate is to apply a tiny error
+            q.add_gate("RX", targets=[0], arg_value=error)
+            q.add_gate("H", targets=[0])
+            # Do alice measurement on qubit 0 and 1 and save the measurement as classical bits
+            q.add_measurement("M0", targets=[0], classical_store=0)
+            q.add_measurement("M1", targets=[1], classical_store=1)
+            # adds a bit-flip if that is true
+            if "bit-flip" in noise:
+                # does is as a probabilistic gate
+                if rng.random() < prob:
+                    q.add_gate("X", targets=[2])
+            # Do the correction depending on Alices measirements
+            # The RX gate is to apply a tiny error
+            q.add_gate("RX", targets=[2], classical_controls=[0], arg_value=error+np.pi)
+            # The Rz gate is to apply a tiny error
+            q.add_gate("RZ", targets=[2], classical_controls=[0], arg_value=error+np.pi)
+        else:
+            # define the quantum circuit for quantum teleportation
+            q = QubitCircuit(3, num_cbits=2, reverse_states=False)
+            # add the cnot gate on qubit 1 with control on the 0'th qubit
+            # The RX gate is to apply a tiny error
+            q.add_gate("CNOT", controls=[0], targets=[1])
+            # add the Hadamard gate on qubit 0
+            q.add_gate("H", targets=[0])
+            # Do alice measurement on qubit 0 and 1 and save the measurement as classical bits
+            q.add_measurement("M0", targets=[0], classical_store=0)
+            q.add_measurement("M1", targets=[1], classical_store=1)
+            # adds a bit-flip if that is true
+            if "bit-flip" in noise:
+                # does is as a probabilistic gate
+                if rng.random() < prob:
+                    q.add_gate("X", targets=[2])
+            # Do the correction depending on Alices measirements
+            # The RX gate is to apply a tiny error
+            q.add_gate("X", targets=[2], classical_controls=[1])
+            # The Rz gate is to apply a tiny error
+            q.add_gate("Z", targets=[2], classical_controls=[0])
         if Draw == True:
             q.draw()
         # Define the CircuitSimulator that runs the QuantumCircuit
@@ -100,7 +118,7 @@ def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.
     else:
         return f"The teleported state is: {ket}"
 
-print(quantumteleport(1,0,Draw = True))
+print(quantumteleport(1,0,Draw = True, noise= ))
 
 #Define how to do quantum teleportation
 def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Draw = False):
