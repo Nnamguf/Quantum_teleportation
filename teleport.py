@@ -240,6 +240,7 @@ def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Dr
 # The way to make it better is by increasing the squeezing parameter r
 # and by making the fock space bigger by setting N to be higher. This is not possible since for high N
 # we will run out of memory very fast.
+# To see the physics look at part A in IV in this article https://arxiv.org/pdf/quant-ph/0604027
 # quantumteleport_CV take 3 inputs and outputs the fidelity between the original state and the one bob has in the end.
 # alpha is the coherent state we want to teleport, r is the squeezing parameter and N is the size of the fock space.
 def quantumteleport_CV(alpha = 1,r=100, N = 10):
@@ -283,6 +284,7 @@ def quantumteleport_CV(alpha = 1,r=100, N = 10):
 # Any unitary operator does two things now first it is applied to the vector U r
 # and is applied on the covariance matrix sigma like so U sigma U.T
 # This allows us to do continuous variable without using fock space.
+# To see the formalism ses https://arxiv.org/pdf/2102.05748
 # quantumteleport_CV_gaussian takes 3 inputs:
 # alpha is the coherent state we want to teleport
 # r is the squeezing parameter
