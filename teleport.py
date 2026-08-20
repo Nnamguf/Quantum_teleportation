@@ -375,5 +375,13 @@ def quantumteleport_CV_gaussian(alpha,r=20, fidelity = False):
 
 # Here are some test function to use
 
+#print(quantumteleport(0.6,0.8,parties = 2, noise = ["loss"], prob = 0.1, epsilon = 0.1,
+                    distance =20, Fidelity = False,seed = False, Draw = False))
+
+#print(entanglementswap(teleport = 'phi+', noise = ["gateerror"],epsilon = 0.1,seed =False,Draw = False, Fidelity = True))
+
+#print(quantumteleport_CV(alpha = 1,r=100, N = 10))
+
+#print(quantumteleport_CV_gaussian(alpha,r=20, fidelity = True)
 
 
