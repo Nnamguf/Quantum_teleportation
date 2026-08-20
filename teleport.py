@@ -57,7 +57,7 @@ def quantumteleport(alpha,beta,parties = 2, noise = [], prob = 0.0, epsilon = 0.
         # Takes into account if there is loss in the system
         if "loss" in noise:
             #at random applies a loss to the state we want to teleport
-            if rng.random.rand() < 1-np.exp(-prob*(distance/(parties-1))):
+            if rng.random() < 1-np.exp(-prob*(distance/(parties-1))):
                 # If the state is lost then we output that the state was lost
                 return "The states was lost during transmission. \nNo teleportation happened. \nTry again"
             else:
@@ -227,7 +227,7 @@ def entanglementswap(teleport = 'phi+', noise = [],epsilon = 0.01,seed =False,Dr
     # between then teleported bell state and the bell state that we wanted to teleport.
     if Fidelity == True:
         fidelity = np.abs(qu.fidelity(bellstate, entangleAB)) ** 2
-        return f"The teleported entangled state is: {state[0]}|00> +{state[1]}|01> + {state[2]}|10> + {state[3]}|11> \nThe fidelity is: {fidelity}"
+        return f"The teleported entangled state is:\n {state[0]}|00> +{state[1]}|01>\n+ {state[2]}|10> + {state[3]}|11>\nThe fidelity is: {fidelity}"
     return f"The teleported entangled state is: {state[0]}|00> +{state[1]}|01> + {state[2]}|10> + {state[3]}|11> "
 
 
@@ -274,7 +274,7 @@ def quantumteleport_CV(alpha = 1,r=100, N = 10):
     bob_out = output.ptrace(2)
     #test if the teleportation is good.
     fidelity = np.abs(qu.fidelity(psi_input, bob_out)) ** 2
-    return fidelity
+    return f"The fidelity is {fidelity}"
 
 
 # quantumteleport_CV_gaussian is a better way of doing continuous variable teleportation.
@@ -374,14 +374,13 @@ def quantumteleport_CV_gaussian(alpha,r=20, fidelity = False):
         return f"The state is: |{teleportedstate.item()}>"
 
 # Here are some test function to use
-
 #print(quantumteleport(0.6,0.8,parties = 2, noise = ["loss"], prob = 0.1, epsilon = 0.1,
-                    distance =20, Fidelity = False,seed = False, Draw = False))
+                    distance =1, Fidelity = True,seed = False, Draw = False))
 
 #print(entanglementswap(teleport = 'phi+', noise = ["gateerror"],epsilon = 0.1,seed =False,Draw = False, Fidelity = True))
 
 #print(quantumteleport_CV(alpha = 1,r=100, N = 10))
 
-#print(quantumteleport_CV_gaussian(alpha,r=20, fidelity = True)
+#print(quantumteleport_CV_gaussian(1,r=20, fidelity = True))
 
 
